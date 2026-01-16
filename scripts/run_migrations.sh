@@ -7,9 +7,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 MIGRATIONS_DIR="$PROJECT_ROOT/sql/migrations"
 
-DB_CONTAINER="postgres_dataops_lab"
-DB_USER="dataops"
-DB_NAME="labdb"
+DB_CONTAINER="${DB_CONTAINER:-postgres_dataops_lab}"
+DB_USER="${DB_USER:-dataops}"
+DB_NAME="${DB_NAME:-labdb}"
 
 echo "Iniciando controle de migrations..."
 
