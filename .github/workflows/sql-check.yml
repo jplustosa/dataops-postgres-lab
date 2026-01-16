@@ -1,0 +1,16 @@
+name: SQL Validation
+
+on: [push, pull_request]
+
+jobs:
+  sql-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check SQL syntax
+        run: |
+          for file in sql/migrations/*.sql; do
+            echo "Validando $file"
+            grep -i "drop database" $file && exit 1 || true
+          done
