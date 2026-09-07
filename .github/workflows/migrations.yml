@@ -16,7 +16,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: dataops
-          POSTGRES_PASSWORD: dataops123
+          POSTGRES_PASSWORD: ci_only_password
           POSTGRES_DB: labdb
         ports:
           - 5432:5432
@@ -39,12 +39,15 @@ jobs:
           DB_PORT: 5432
           DB_USER: dataops
           DB_NAME: labdb
-          PGPASSWORD: dataops123
+          PGPASSWORD: ci_only_password
         run: |
           chmod +x scripts/run_migrations.sh
           scripts/run_migrations.sh
 
       - name: Verify schema version
         env:
-          PGPASSWORD: dataops123
-        run: psql -h localhost -p 5432 -U dataops -d labdb -c "SELECT * FROM infra.schema_version ORDER BY version;"
+          PGPASSWORD: ci_only_password
+        run: |
+          psql -h localhost -p 5432 -U dataops -d labdb -v ON_ERROR_STOP=1 \
+            -c "SELECT * FROM infra.schema_version ORDER BY version;"
+          test "$(psql -h localhost -p 5432 -U dataops -d labdb -tAc 'SELECT COUNT(*) FROM infra.schema_version;')" -gt 0
