@@ -2,13 +2,15 @@ name: Database Migrations Check
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   migrations:
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:16
@@ -19,27 +21,30 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U dataops"
-          --health-interval=10s
+          --health-cmd="pg_isready -U dataops -d labdb"
+          --health-interval=5s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Wait for PostgreSQL
-        run: |
-          until pg_isready -h localhost -p 5432 -U dataops; do
-            echo "Waiting for postgres..."
-            sleep 2
-          done
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
       - name: Run migrations
         env:
-          DB_CONTAINER: ${{ job.services.postgres.id }}
+          DB_HOST: localhost
+          DB_PORT: 5432
           DB_USER: dataops
           DB_NAME: labdb
+          PGPASSWORD: dataops123
         run: |
           chmod +x scripts/run_migrations.sh
           scripts/run_migrations.sh
+
+      - name: Verify schema version
+        env:
+          PGPASSWORD: dataops123
+        run: psql -h localhost -p 5432 -U dataops -d labdb -c "SELECT * FROM infra.schema_version ORDER BY version;"

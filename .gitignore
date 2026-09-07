@@ -1,0 +1,21 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+
+# PostgreSQL local data
+postgres-data/
